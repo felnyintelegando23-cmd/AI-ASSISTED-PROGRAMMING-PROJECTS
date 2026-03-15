@@ -94,14 +94,30 @@ def to_int_array(lst):
 # ══════════════════════════════════════════════════════════════════════════════
 class TwoStoreyHouseBuilder:
 
+    # ── Colour palette — Dark Engineering Theme ─────────────────────────────
+    C_BG       = "#0f1923"   # deep navy background
+    C_SURFACE  = "#16253a"   # card surface
+    C_SURFACE2 = "#1e3450"   # lighter surface / hover
+    C_BORDER   = "#2a4a6b"   # border / separator
+    C_ACCENT   = "#f0a500"   # amber accent (buttons, active)
+    C_ACCENT2  = "#38b2f0"   # sky-blue accent (tabs, labels)
+    C_GREEN    = "#27c98a"   # success green
+    C_RED      = "#e85d4a"   # error red
+    C_FG       = "#d8eaf5"   # main text
+    C_FG2      = "#6a8fad"   # muted text
+    C_FG3      = "#a8c8e0"   # secondary text
+    C_ENTRY    = "#0d1e2e"   # entry field bg
+    C_LOG_BG   = "#060f18"   # log background
+    C_LOG_FG   = "#27c98a"   # log text
+
     def __init__(self, root):
         self.root = root
         self.root.title("STAAD.Pro Two-Storey House Builder — NSCP 2015")
-        self.root.geometry("1060x860")
+        self.root.geometry("1100x900")
         self.root.resizable(True, True)
+        self.root.configure(bg=self.C_BG)
 
-        self.style = ttk.Style()
-        self.style.theme_use('clam')
+        self._apply_theme()
 
         self.staad      = None
         self.is_running = False
@@ -110,54 +126,234 @@ class TwoStoreyHouseBuilder:
 
         if not STAAD_AVAILABLE:
             self.log("WARNING: openstaadpy not found!", "warning")
-            self.log("Install it:  pip install openstaadpy", "warning")
+            self.log("Install:  pip install openstaadpy", "warning")
         else:
-            self.log("openstaadpy found ✓  — open STAAD.Pro with an empty model, then click Build.", "success")
+            self.log("openstaadpy ✓  — open STAAD.Pro with an empty model, then Build.", "success")
+
+    def _apply_theme(self):
+        """Apply dark engineering theme to all ttk widgets."""
+        s = ttk.Style()
+        s.theme_use('clam')
+
+        # Base
+        s.configure(".",
+            background=self.C_SURFACE,
+            foreground=self.C_FG,
+            fieldbackground=self.C_ENTRY,
+            bordercolor=self.C_BORDER,
+            troughcolor=self.C_SURFACE2,
+            selectbackground=self.C_ACCENT2,
+            selectforeground=self.C_BG,
+            font=("Segoe UI", 9),
+            relief="flat")
+
+        # Frames
+        s.configure("TFrame", background=self.C_BG)
+        s.configure("Inner.TFrame", background=self.C_SURFACE)
+
+        # LabelFrame
+        s.configure("TLabelframe",
+            background=self.C_SURFACE,
+            bordercolor=self.C_BORDER,
+            relief="solid", borderwidth=1)
+        s.configure("TLabelframe.Label",
+            background=self.C_SURFACE,
+            foreground=self.C_ACCENT2,
+            font=("Segoe UI", 9, "bold"))
+
+        # Labels
+        s.configure("TLabel",
+            background=self.C_SURFACE,
+            foreground=self.C_FG,
+            font=("Segoe UI", 9))
+        s.configure("Title.TLabel",
+            background=self.C_BG,
+            foreground=self.C_ACCENT,
+            font=("Segoe UI", 15, "bold"))
+        s.configure("Sub.TLabel",
+            background=self.C_BG,
+            foreground=self.C_FG2,
+            font=("Segoe UI", 8))
+        s.configure("Muted.TLabel",
+            background=self.C_SURFACE,
+            foreground=self.C_FG2,
+            font=("Segoe UI", 8))
+
+        # Entry
+        s.configure("TEntry",
+            fieldbackground=self.C_ENTRY,
+            foreground=self.C_FG,
+            insertcolor=self.C_ACCENT2,
+            bordercolor=self.C_BORDER,
+            lightcolor=self.C_BORDER,
+            darkcolor=self.C_BORDER)
+        s.map("TEntry",
+            fieldbackground=[("focus", "#0e2236")],
+            bordercolor=[("focus", self.C_ACCENT2)])
+
+        # Combobox
+        s.configure("TCombobox",
+            fieldbackground=self.C_ENTRY,
+            background=self.C_SURFACE2,
+            foreground=self.C_FG,
+            arrowcolor=self.C_ACCENT2,
+            bordercolor=self.C_BORDER)
+        s.map("TCombobox",
+            fieldbackground=[("readonly", self.C_ENTRY)],
+            selectbackground=[("readonly", self.C_ENTRY)],
+            selectforeground=[("readonly", self.C_FG)],
+            bordercolor=[("focus", self.C_ACCENT2)])
+
+        # Checkbutton
+        s.configure("TCheckbutton",
+            background=self.C_SURFACE,
+            foreground=self.C_FG,
+            indicatorcolor=self.C_ENTRY,
+            indicatorbackground=self.C_ENTRY)
+        s.map("TCheckbutton",
+            indicatorcolor=[("selected", self.C_ACCENT2)],
+            background=[("active", self.C_SURFACE2)])
+
+        # Radiobutton
+        s.configure("TRadiobutton",
+            background=self.C_SURFACE,
+            foreground=self.C_FG)
+        s.map("TRadiobutton",
+            indicatorcolor=[("selected", self.C_ACCENT)],
+            background=[("active", self.C_SURFACE2)])
+
+        # Notebook
+        s.configure("TNotebook",
+            background=self.C_BG,
+            bordercolor=self.C_BORDER,
+            tabmargins=[2, 5, 2, 0])
+        s.configure("TNotebook.Tab",
+            background=self.C_SURFACE2,
+            foreground=self.C_FG2,
+            padding=[14, 7],
+            font=("Segoe UI", 9),
+            bordercolor=self.C_BORDER)
+        s.map("TNotebook.Tab",
+            background=[("selected", self.C_SURFACE),
+                        ("active",   self.C_SURFACE2)],
+            foreground=[("selected", self.C_ACCENT),
+                        ("active",   self.C_FG)],
+            font=[("selected", ("Segoe UI", 9, "bold"))])
+
+        # Progressbar
+        s.configure("TProgressbar",
+            background=self.C_ACCENT2,
+            troughcolor=self.C_ENTRY,
+            bordercolor=self.C_BORDER)
+
+        # Buttons
+        s.configure("TButton",
+            background=self.C_SURFACE2,
+            foreground=self.C_FG,
+            bordercolor=self.C_BORDER,
+            font=("Segoe UI", 9, "bold"),
+            padding=[8, 5],
+            relief="flat")
+        s.map("TButton",
+            background=[("active", self.C_ACCENT2),
+                        ("pressed", self.C_ACCENT)],
+            foreground=[("active", self.C_BG),
+                        ("pressed", self.C_BG)])
+
+        # Special button styles
+        for name, bg, fg, abg in [
+            ("Build.TButton",   "#c0392b", "#ffffff", "#e74c3c"),
+            ("Analyze.TButton", "#1a6b3a", "#ffffff", "#27ae60"),
+            ("Preview.TButton", self.C_SURFACE2, self.C_ACCENT2, self.C_ACCENT2),
+            ("Seismic.TButton", "#1a4a6b", self.C_ACCENT, "#2471a3"),
+            ("Clear.TButton",   self.C_SURFACE,  self.C_FG2, self.C_SURFACE2),
+        ]:
+            s.configure(name, background=bg, foreground=fg,
+                        font=("Segoe UI", 9, "bold"), padding=[8,5], relief="flat")
+            s.map(name,
+                background=[("active", abg), ("pressed", abg)],
+                foreground=[("active", "#ffffff" if name != "Clear.TButton" else self.C_FG),
+                            ("pressed", "#ffffff")])
+
+        # Scrolledtext handled in _build_ui
 
     # ──────────────────────────────────────────────────────────────────────────
     #  UI CONSTRUCTION
     # ──────────────────────────────────────────────────────────────────────────
     def _build_ui(self):
-        # Menu
-        mb = tk.Menu(self.root)
+        # ── Menu bar ───────────────────────────────────────────────────────
+        mb = tk.Menu(self.root, bg=self.C_SURFACE, fg=self.C_FG,
+                     activebackground=self.C_ACCENT2, activeforeground=self.C_BG,
+                     relief="flat", bd=0)
         self.root.config(menu=mb)
-        fm = tk.Menu(mb, tearoff=0)
-        mb.add_cascade(label="File", menu=fm)
-        fm.add_command(label="Save Configuration", command=self.save_config)
-        fm.add_command(label="Load Configuration", command=self.load_config)
-        fm.add_separator()
-        fm.add_command(label="Export Log",          command=self.export_log)
-        fm.add_separator()
-        fm.add_command(label="Exit",                command=self.root.quit)
-        hm = tk.Menu(mb, tearoff=0)
-        mb.add_cascade(label="Help", menu=hm)
-        hm.add_command(label="About",           command=self.show_about)
-        hm.add_command(label="Parameter Guide", command=self.show_guide)
+        for lbl, items in [
+            ("File", [
+                ("Save Configuration", self.save_config),
+                ("Load Configuration", self.load_config),
+                None,
+                ("Export Log",         self.export_log),
+                None,
+                ("Exit",               self.root.quit),
+            ]),
+            ("Help", [
+                ("About",           self.show_about),
+                ("Parameter Guide", self.show_guide),
+            ]),
+        ]:
+            m = tk.Menu(mb, tearoff=0, bg=self.C_SURFACE, fg=self.C_FG,
+                        activebackground=self.C_ACCENT2, activeforeground=self.C_BG)
+            mb.add_cascade(label=lbl, menu=m)
+            for item in items:
+                if item is None: m.add_separator()
+                else: m.add_command(label=item[0], command=item[1])
 
-        # Root grid
+        # ── Header bar ─────────────────────────────────────────────────────
+        hdr = tk.Frame(self.root, bg=self.C_SURFACE, height=62)
+        hdr.pack(fill="x", side="top")
+        hdr.pack_propagate(False)
+
+        # Left — title
+        tk.Label(hdr, text="STAAD.Pro",
+                 bg=self.C_SURFACE, fg=self.C_ACCENT,
+                 font=("Segoe UI", 14, "bold")).pack(side="left", padx=(16,4), pady=12)
+        tk.Label(hdr, text="Two-Storey House Builder",
+                 bg=self.C_SURFACE, fg=self.C_FG,
+                 font=("Segoe UI", 13)).pack(side="left", padx=(0,10), pady=12)
+        tk.Frame(hdr, bg=self.C_BORDER, width=1).pack(side="left", fill="y", pady=12)
+        tk.Label(hdr, text="  NSCP 2015  ·  §208 Seismic  ·  Concrete & Steel",
+                 bg=self.C_SURFACE, fg=self.C_FG2,
+                 font=("Segoe UI", 9)).pack(side="left", padx=10)
+
+        # Right — status pill
+        self._hdr_status = tk.Label(hdr,
+            text="● STAAD: Ready" if STAAD_AVAILABLE else "● openstaadpy missing",
+            bg=self.C_SURFACE,
+            fg=self.C_GREEN if STAAD_AVAILABLE else self.C_RED,
+            font=("Consolas", 8))
+        self._hdr_status.pack(side="right", padx=16)
+
+        # Accent bar
+        tk.Frame(self.root, bg=self.C_ACCENT, height=2).pack(fill="x")
+
+        # ── Root grid ──────────────────────────────────────────────────────
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
 
-        mf = ttk.Frame(self.root, padding="10")
-        mf.grid(row=0, column=0, sticky="nsew")
-        mf.columnconfigure(0, weight=1)
-        mf.columnconfigure(1, weight=1)
-        mf.rowconfigure(5, weight=1)
+        main = tk.Frame(self.root, bg=self.C_BG)
+        main.pack(fill="both", expand=True, padx=10, pady=(8,0))
+        main.columnconfigure(0, weight=1)
+        main.rowconfigure(1, weight=1)
 
-        # Title
-        ttk.Label(mf, text="Two-Storey House Builder — NSCP 2015",
-                  font=('Arial', 15, 'bold')).grid(
-            row=0, column=0, columnspan=2, sticky="w", pady=(0, 8))
+        # ── Notebook ───────────────────────────────────────────────────────
+        nb = ttk.Notebook(main)
+        nb.pack(fill="both", expand=False, pady=(0,6))
 
-        # ── Notebook for parameter tabs ────────────────────────────────────
-        nb = ttk.Notebook(mf)
-        nb.grid(row=1, column=0, columnspan=2, sticky="nsew", pady=(0, 8))
-        mf.rowconfigure(1, weight=0)
+        self.vars = {}
 
-        tab_geo  = ttk.Frame(nb, padding=8)
-        tab_mat  = ttk.Frame(nb, padding=8)
-        tab_ld   = ttk.Frame(nb, padding=8)
-        tab_eq   = ttk.Frame(nb, padding=8)
+        tab_geo  = tk.Frame(nb, bg=self.C_SURFACE, padx=8, pady=8)
+        tab_mat  = tk.Frame(nb, bg=self.C_SURFACE, padx=8, pady=8)
+        tab_ld   = tk.Frame(nb, bg=self.C_SURFACE, padx=8, pady=8)
+        tab_eq   = tk.Frame(nb, bg=self.C_SURFACE, padx=8, pady=8)
         nb.add(tab_geo,  text="  🏗  Geometry  ")
         nb.add(tab_mat,  text="  🧱  Material & Sections  ")
         nb.add(tab_ld,   text="  ⬇  Gravity Loads  ")
@@ -168,64 +364,81 @@ class TwoStoreyHouseBuilder:
         self._tab_loads(tab_ld)
         self._tab_seismic(tab_eq)
 
-        # ── Buttons ────────────────────────────────────────────────────────
-        bf = ttk.Frame(mf)
-        bf.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(0, 6))
+        # ── Action buttons ─────────────────────────────────────────────────
+        bf = tk.Frame(main, bg=self.C_BG)
+        bf.pack(fill="x", pady=(0,6))
 
-        self.btn_preview = ttk.Button(bf, text="Preview Model Info",
-                                      command=self.preview_model, width=20)
-        self.btn_preview.grid(row=0, column=0, padx=4)
+        self.btn_preview = ttk.Button(bf, text="⊞  Preview Info",
+                                      style="Preview.TButton",
+                                      command=self.preview_model, width=18)
+        self.btn_preview.pack(side="left", padx=(0,4))
 
-        self.btn_seismic = ttk.Button(bf, text="Compute Seismic",
-                                      command=self.seismic_preview, width=18)
-        self.btn_seismic.grid(row=0, column=1, padx=4)
+        self.btn_seismic = ttk.Button(bf, text="⚡  Compute Seismic",
+                                      style="Seismic.TButton",
+                                      command=self.seismic_preview, width=20)
+        self.btn_seismic.pack(side="left", padx=(0,4))
 
         self.btn_build = ttk.Button(bf, text="▶  Build Model",
-                                    command=self.build_model, width=18)
-        self.btn_build.grid(row=0, column=2, padx=4)
+                                    style="Build.TButton",
+                                    command=self.build_model, width=16)
+        self.btn_build.pack(side="left", padx=(0,4))
 
-        self.btn_analyze = ttk.Button(bf, text="Build & Analyze",
+        self.btn_analyze = ttk.Button(bf, text="▶▶  Build & Analyze",
+                                      style="Analyze.TButton",
                                       command=self.build_and_analyze, width=18)
-        self.btn_analyze.grid(row=0, column=3, padx=4)
+        self.btn_analyze.pack(side="left", padx=(0,4))
 
-        self.btn_clear = ttk.Button(bf, text="Clear Log",
+        self.btn_clear = ttk.Button(bf, text="✕  Clear Log",
+                                    style="Clear.TButton",
                                     command=self.clear_log, width=12)
-        self.btn_clear.grid(row=0, column=4, padx=4)
+        self.btn_clear.pack(side="left")
 
-        # ── Progress bar ───────────────────────────────────────────────────
-        self.progress = ttk.Progressbar(mf, mode='indeterminate')
-        self.progress.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(0, 6))
+        # Progress bar
+        self.progress = ttk.Progressbar(bf, mode='indeterminate', length=120)
+        self.progress.pack(side="right", padx=(0,4))
 
-        # ── Log ────────────────────────────────────────────────────────────
-        lf = ttk.LabelFrame(mf, text="Build Log", padding=8)
-        lf.grid(row=4, column=0, columnspan=2, sticky="nsew")
-        lf.columnconfigure(0, weight=1); lf.rowconfigure(0, weight=1)
-        mf.rowconfigure(4, weight=1)
-
-        self.log_text = scrolledtext.ScrolledText(lf, wrap=tk.WORD,
-                                                  height=14, width=100)
-        self.log_text.grid(row=0, column=0, sticky="nsew")
-        self.log_text.tag_config('info',    foreground='black')
-        self.log_text.tag_config('success', foreground='green')
-        self.log_text.tag_config('warning', foreground='darkorange')
-        self.log_text.tag_config('error',   foreground='red')
-        self.log_text.tag_config('eq',      foreground='blue')
-
-        # ── Status bar ─────────────────────────────────────────────────────
+        # Status
         self.status_var = tk.StringVar(value="Ready")
-        ttk.Label(mf, textvariable=self.status_var,
-                  relief=tk.SUNKEN, anchor=tk.W).grid(
-            row=5, column=0, columnspan=2, sticky="ew", pady=(6, 0))
+        tk.Label(bf, textvariable=self.status_var,
+                 bg=self.C_BG, fg=self.C_FG2,
+                 font=("Segoe UI", 8)).pack(side="right", padx=(0,8))
+
+        # ── Log panel ──────────────────────────────────────────────────────
+        log_outer = tk.Frame(main, bg=self.C_BORDER, bd=1)
+        log_outer.pack(fill="both", expand=True, pady=(0,8))
+
+        log_hdr = tk.Frame(log_outer, bg=self.C_SURFACE2, height=28)
+        log_hdr.pack(fill="x"); log_hdr.pack_propagate(False)
+        tk.Label(log_hdr, text="  BUILD LOG",
+                 bg=self.C_SURFACE2, fg=self.C_ACCENT2,
+                 font=("Consolas", 8, "bold")).pack(side="left", padx=8, pady=5)
+
+        self.log_text = scrolledtext.ScrolledText(
+            log_outer,
+            wrap=tk.WORD, height=12,
+            bg=self.C_LOG_BG, fg=self.C_LOG_FG,
+            insertbackground=self.C_ACCENT2,
+            selectbackground=self.C_ACCENT2,
+            font=("Consolas", 8),
+            relief="flat", bd=0,
+            state=tk.NORMAL)
+        self.log_text.pack(fill="both", expand=True)
+
+        self.log_text.tag_config('info',    foreground=self.C_LOG_FG)
+        self.log_text.tag_config('success', foreground=self.C_GREEN)
+        self.log_text.tag_config('warning', foreground=self.C_ACCENT)
+        self.log_text.tag_config('error',   foreground=self.C_RED)
+        self.log_text.tag_config('eq',      foreground=self.C_ACCENT2)
 
     # ──────────────────────────────────────────────────────────────────────────
     #  TAB: GEOMETRY
     # ──────────────────────────────────────────────────────────────────────────
     def _tab_geometry(self, p):
-        p.columnconfigure(1, weight=1); p.columnconfigure(3, weight=1)
+        p.columnconfigure(0, weight=1); p.columnconfigure(1, weight=1)
 
-        # Left column
+        # Left — geometry
         lf = ttk.LabelFrame(p, text=" House Geometry ", padding=10)
-        lf.grid(row=0, column=0, sticky="nsew", padx=(0, 6))
+        lf.grid(row=0, column=0, sticky="nsew", padx=(0,6))
 
         geo_fields = [
             ("Bays in X direction:",  "bays_x",    "3",   "Column lines along length"),
@@ -235,22 +448,24 @@ class TwoStoreyHouseBuilder:
             ("Storey 1 Height (m):",  "h1",        "3.0", "Ground floor height"),
             ("Storey 2 Height (m):",  "h2",        "3.0", "Upper floor height"),
         ]
-        self.vars = {}
         for r, (lbl, key, val, tip) in enumerate(geo_fields):
             ttk.Label(lf, text=lbl).grid(row=r, column=0, sticky="w", pady=4)
             v = tk.StringVar(value=val); self.vars[key] = v
-            ttk.Entry(lf, textvariable=v, width=12).grid(row=r, column=1, sticky="w", padx=(8,0), pady=4)
-            ttk.Label(lf, text=tip, foreground="gray").grid(row=r, column=2, sticky="w", padx=(6,0), pady=4)
+            ttk.Entry(lf, textvariable=v, width=12).grid(
+                row=r, column=1, sticky="w", padx=(8,0), pady=4)
+            ttk.Label(lf, text=tip, style="Muted.TLabel").grid(
+                row=r, column=2, sticky="w", padx=(6,0), pady=4)
 
-        # Right column — options
+        # Right — options
         rf = ttk.LabelFrame(p, text=" Options ", padding=10)
-        rf.grid(row=0, column=1, sticky="nsew", padx=(6, 0))
+        rf.grid(row=0, column=1, sticky="nsew", padx=(6,0))
 
         ttk.Label(rf, text="Unit System:").grid(row=0, column=0, sticky="w", pady=4)
         self.vars["unit"] = tk.StringVar(value="METER-KN")
         ttk.Combobox(rf, textvariable=self.vars["unit"],
                      values=["METER-KN", "FEET-KIP", "INCHES-KIP"],
-                     state="readonly", width=14).grid(row=0, column=1, sticky="w", padx=(8,0), pady=4)
+                     state="readonly", width=18).grid(
+            row=0, column=1, columnspan=2, sticky="w", padx=(8,0), pady=4)
 
         ttk.Label(rf, text="Output File (.std):").grid(row=1, column=0, sticky="w", pady=4)
         self.vars["file"] = tk.StringVar(
@@ -260,34 +475,28 @@ class TwoStoreyHouseBuilder:
         ttk.Button(rf, text="…", width=3,
                    command=self._browse_file).grid(row=1, column=2, padx=(4,0), pady=4)
 
-        self.sw_var = tk.BooleanVar(value=True)
+        self.sw_var    = tk.BooleanVar(value=True)
         self.combo_var = tk.BooleanVar(value=True)
         ttk.Checkbutton(rf, text="Include Self-Weight",
-                        variable=self.sw_var).grid(row=2, column=0, columnspan=3, sticky="w", pady=4)
+                        variable=self.sw_var).grid(
+            row=2, column=0, columnspan=3, sticky="w", pady=4)
         ttk.Checkbutton(rf, text="Include NSCP 2015 Load Combinations",
-                        variable=self.combo_var).grid(row=3, column=0, columnspan=3, sticky="w", pady=4)
+                        variable=self.combo_var).grid(
+            row=3, column=0, columnspan=3, sticky="w", pady=4)
 
-        # Unit system
-        ttk.Label(rf, text="Unit System:").grid(row=4, column=0, sticky="w", pady=(10,2))
-        self.vars["unit"] = tk.StringVar(value="METER-KN")
-        ttk.Combobox(rf, textvariable=self.vars["unit"],
-                     values=["METER-KN", "FEET-KIP", "INCHES-KIP"],
-                     state="readonly", width=18).grid(row=4, column=1, columnspan=2, sticky="w", padx=(8,0), pady=(10,2))
-
-        # Support type at Y=0 base nodes
-        ttk.Label(rf, text="Base Support Type (Y=0):").grid(row=5, column=0, sticky="w", pady=(6,2))
+        ttk.Label(rf, text="Base Support Type (Y=0):").grid(
+            row=4, column=0, sticky="w", pady=(8,2))
         self.vars["support_type"] = tk.StringVar(value="FIXED")
         ttk.Combobox(rf, textvariable=self.vars["support_type"],
-                     values=[
-                         "FIXED",
-                         "PINNED",
-                         "FIXED BUT FX FZ MX MY MZ",
-                         "FIXED BUT MX MY MZ",
-                         "FIXED BUT FX FZ MY",
-                     ],
-                     state="readonly", width=28).grid(row=5, column=1, columnspan=2, sticky="w", padx=(8,0), pady=(6,2))
+                     values=["FIXED","PINNED",
+                             "FIXED BUT FX FZ MX MY MZ",
+                             "FIXED BUT MX MY MZ",
+                             "FIXED BUT FX FZ MY"],
+                     state="readonly", width=28).grid(
+            row=4, column=1, columnspan=2, sticky="w", padx=(8,0), pady=(8,2))
         ttk.Label(rf, text="FIXED=all DOF | PINNED=no moment | FIXED BUT=partial",
-                  foreground="gray").grid(row=6, column=0, columnspan=3, sticky="w", padx=(0,0), pady=(0,4))
+                  style="Muted.TLabel").grid(
+            row=5, column=0, columnspan=3, sticky="w", pady=(0,4))
 
     # ──────────────────────────────────────────────────────────────────────────
     #  TAB: MATERIAL & SECTIONS
@@ -398,10 +607,9 @@ class TwoStoreyHouseBuilder:
             self.vars[key] = tk.StringVar(value=val)
             ttk.Entry(lf, textvariable=self.vars[key], width=12).grid(
                 row=r, column=1, sticky="w", padx=(8,0), pady=5)
-            ttk.Label(lf, text=tip, foreground="gray").grid(
+            ttk.Label(lf, text=tip, style="Muted.TLabel").grid(
                 row=r, column=2, sticky="w", padx=(8,0), pady=5)
 
-        # Combo reference display
         cf = ttk.LabelFrame(p, text=" NSCP 2015 §203 Load Combinations (auto-generated) ", padding=8)
         cf.pack(fill="x")
         combos = [
@@ -412,8 +620,10 @@ class TwoStoreyHouseBuilder:
             "0.9D + 1.0Ex (if seismic)",         "0.9D + 1.0Ez (if seismic)",
         ]
         for i, c in enumerate(combos):
-            clr = "blue" if "seismic" in c else "gray"
-            ttk.Label(cf, text=f"  ⬡  {c}", foreground=clr).grid(
+            clr = self.C_ACCENT2 if "seismic" in c else self.C_FG2
+            tk.Label(cf, text=f"  ⬡  {c}",
+                     bg=self.C_SURFACE, fg=clr,
+                     font=("Segoe UI", 8)).grid(
                 row=i//2, column=i%2, sticky="w", padx=8, pady=2)
 
     # ──────────────────────────────────────────────────────────────────────────
@@ -483,7 +693,9 @@ class TwoStoreyHouseBuilder:
             "Ft = 0.07·T·V  if T > 0.7 s",
         ]
         for i, e in enumerate(eqs):
-            ttk.Label(ref, text=f"  ⬡  {e}", foreground="gray").grid(
+            tk.Label(ref, text=f"  ⬡  {e}",
+                     bg=self.C_SURFACE, fg=self.C_FG2,
+                     font=("Consolas", 8)).grid(
                 row=i//2, column=i%2, sticky="w", padx=8, pady=2)
 
     # ──────────────────────────────────────────────────────────────────────────
@@ -772,33 +984,41 @@ NOTES:
         h1 = p['h1'];        h2 = p['h2']
         DL = p['dl'];  LL = p['ll'];  WL = p['wl']
 
-        # ── Unit-aware dimension conversion ───────────────────────────────────
-        # All input is in metres (bays) and mm (sections); convert for chosen unit
-        if unit == "METER-KN":
-            L_div  = 1.0       # coords already in metres
-            S_div  = 1000.0    # mm → m  for section dims
+        # ── Unit-aware conversion ─────────────────────────────────────────────
+        # STRATEGY:
+        #   Geometry (nodes) always written in user-chosen unit (METER/FEET/INCH).
+        #   For CONCRETE sections: write UNIT MMS KN before MEMBER PROPERTY
+        #     so YD/ZD values are in mm directly — no conversion, no errors.
+        #     Then switch back to UNIT METER KN for loads.
+        #   For STEEL sections: section names (W14X82 etc.) are unit-independent.
+        #   This matches the official STAAD tutorial pattern:
+        #     UNIT MMS KN → MEMBER PROPERTY ... PRIS YD 400 ZD 400
+        unit_selected = str(p['unit']).strip()
+        self.log(f"  Unit selected: '{unit_selected}'", "success")
+
+        if unit_selected == "METER-KN":
+            L_div  = 1.0
             u_str  = "METER KN"
-            # Material properties for METER-KN
-            E_conc = 4700*math.sqrt(p['fc'])*1000   # kN/m²
-            E_steel= 200000000                       # kN/m²
-            dens_c = 24.0                            # kN/m³
-            dens_s = 76.82                           # kN/m³
-        elif unit == "FEET-KIP":
-            L_div  = 0.3048    # m → ft
-            S_div  = 304.8     # mm → ft
+            E_conc = 4700 * math.sqrt(p['fc']) * 1000.0   # kN/m²
+            E_steel= 200000000.0                            # kN/m²
+            dens_c = 24.0                                   # kN/m³
+            dens_s = 76.82                                  # kN/m³
+        elif unit_selected == "FEET-KIP":
+            L_div  = 0.3048
             u_str  = "FEET KIP"
-            E_conc = 4700*math.sqrt(p['fc'])*20.885 # kip/ft²
-            E_steel= 4176000                         # kip/ft²  (29000 ksi → kip/ft²)
-            dens_c = 0.1502                          # kip/ft³
-            dens_s = 0.4900                          # kip/ft³
-        else:  # INCHES-KIP
-            L_div  = 0.0254    # m → inches
-            S_div  = 25.4      # mm → inches
+            E_conc = 4700 * math.sqrt(p['fc']) * 20.885
+            E_steel= 4176000.0
+            dens_c = 0.1502
+            dens_s = 0.4900
+        else:                   # INCHES-KIP
+            L_div  = 0.0254
             u_str  = "INCH KIP"
-            E_conc = 4700*math.sqrt(p['fc'])*0.14504 # ksi
-            E_steel= 29000                            # ksi
-            dens_c = 8.68e-5                          # kip/in³
-            dens_s = 2.836e-4                         # kip/in³
+            E_conc = 4700 * math.sqrt(p['fc']) * 0.14504
+            E_steel= 29000.0
+            dens_c = 8.68e-5
+            dens_s = 2.836e-4
+
+        self.log(f"  Geometry unit: {u_str}  L_div={L_div}", "success")
 
         # ── Build node table ──────────────────────────────────────────────────
         self.status_var.set("Building node table …")
@@ -854,7 +1074,7 @@ NOTES:
 
             # Convert seismic nodal forces to model units
             eq_conv = {"METER-KN":1.0, "FEET-KIP":0.22481, "INCHES-KIP":0.22481}
-            ec = eq_conv.get(unit, 1.0)
+            ec = eq_conv.get(unit_selected, 1.0)
             f1n = f1n_kN * ec
             f2n = f2n_kN * ec
 
@@ -866,15 +1086,16 @@ NOTES:
         # For METER-KN: kN/m² × m = kN/m  (no conversion needed)
         # For FEET-KIP: kN/m² × 0.02089 = kip/ft²; × ft trib = kip/ft
         # For INCH-KIP: kN/m² × 0.001450 = ksi; × in trib = kip/in
-        if unit == "METER-KN":
-            f_conv = 1.0           # kN/m stays kN/m
-            tx = bd/2; tz = bw/2   # tributary widths already in metres
-        elif unit == "FEET-KIP":
-            f_conv = 0.020885      # kN/m → kip/ft  per unit width
-            tx = (bd/2) / 0.3048   # tributary width in feet
+        # ── Tributary load per metre — in model units ─────────────────────────
+        if unit_selected == "METER-KN":
+            f_conv = 1.0
+            tx = bd/2; tz = bw/2
+        elif unit_selected == "FEET-KIP":
+            f_conv = 0.020885
+            tx = (bd/2) / 0.3048
             tz = (bw/2) / 0.3048
         else:  # INCHES-KIP
-            f_conv = 0.001749      # kN/m → kip/in  per unit width
+            f_conv = 0.001749
             tx = (bd/2) / 0.0254
             tz = (bw/2) / 0.0254
 
@@ -885,14 +1106,18 @@ NOTES:
         wl_x = WL * f_conv * (bd / L_div)   # wind on column face
         wl_z = WL * f_conv * (bw / L_div)
 
-        self.log(f"  Loads in {unit}: DL beam={dl_b:.4f}  LL beam={ll_b:.4f}  "
+        self.log(f"  Loads in {unit_selected}: DL beam={dl_b:.4f}  LL beam={ll_b:.4f}  "
                  f"WL x={wl_x:.4f}", "success")
+        self.log(f"  Units summary: {u_str}", "success")
 
-        # ── Section dimensions in model units ─────────────────────────────────
+        # ── Section dimensions — concrete uses mm directly (UNIT MMS KN) ──────
         if mat == "Concrete (RC)":
-            col_yd = p['col_h']/S_div;  col_zd = p['col_b']/S_div
-            bm_yd  = p['beam_h']/S_div; bm_zd  = p['beam_b']/S_div
-            sb_yd  = p['sb_h']/S_div;   sb_zd  = p['sb_b']/S_div
+            # Values stay in mm — written under UNIT MMS KN block
+            col_yd = p['col_h'];   col_zd = p['col_b']
+            bm_yd  = p['beam_h'];  bm_zd  = p['beam_b']
+            sb_yd  = p['sb_h'];    sb_zd  = p['sb_b']
+            self.log(f"  RC sections (mm): col {col_zd}×{col_yd}  "
+                     f"beam {bm_zd}×{bm_yd}  sb {sb_zd}×{sb_yd}", "success")
 
         # ── Write the .std file ───────────────────────────────────────────────
         self.status_var.set("Writing .std file …")
@@ -915,13 +1140,17 @@ NOTES:
 
         # Member properties
         if mat == "Concrete (RC)":
+            # Switch to MMS KN so YD/ZD are in mm — no conversion needed
+            # This is the official STAAD tutorial pattern (UNIT MMS KN → PRIS YD 400 ZD 400)
+            W(f"UNIT MMS KN")
             W(f"MEMBER PROPERTY")
-            W(f"{ml(col_mems)} PRIS YD {col_yd:.6f} ZD {col_zd:.6f}")
-            W(f"{ml(beam_mems)} PRIS YD {bm_yd:.6f} ZD {bm_zd:.6f}")
-            W(f"{ml(sbm_mems)} PRIS YD {sb_yd:.6f} ZD {sb_zd:.6f}")
+            W(f"{ml(col_mems)} PRIS YD {col_yd:.1f} ZD {col_zd:.1f}")
+            W(f"{ml(beam_mems)} PRIS YD {bm_yd:.1f} ZD {bm_zd:.1f}")
+            W(f"{ml(sbm_mems)} PRIS YD {sb_yd:.1f} ZD {sb_zd:.1f}")
+            # Restore original unit for everything that follows
+            W(f"UNIT {u_str}")
         else:
             cs=p['col_sec']; bs=p['beam_sec']; ss=p['sb_sec']
-            # AMERICAN keyword must be on SAME line as MEMBER PROPERTY
             W(f"MEMBER PROPERTY AMERICAN")
             W(f"{ml(col_mems)} TABLE ST {cs}")
             W(f"{ml(beam_mems)} TABLE ST {bs}")
@@ -1021,31 +1250,68 @@ NOTES:
         W(f"PERFORM ANALYSIS PRINT STATICS CHECK")
         W(f"FINISH")
 
-        # Write file
-        std_content = "\n".join(lines) + "\n"
-        with open(fp, "w") as f:
-            f.write(std_content)
-        self.log(f"  .std file written ({len(lines)} lines)", "success")
+        # ── Verify key lines before writing ──────────────────────────────────
+        self.log(f"  STD file header check:", "success")
+        self.log(f"    Line 1: {lines[0]}", "success")
+        self.log(f"    Unit  : {lines[5]}", "success")   # UNIT METER KN
+        if mat == "Concrete (RC)" and len(lines) > 10:
+            # Find the MEMBER PROPERTY line
+            for i, l in enumerate(lines[:30]):
+                if "PRIS" in l:
+                    self.log(f"    Prop  : {l}", "success")
+                    break
 
-        # ── Open in STAAD.Pro via openstaadpy ─────────────────────────────────
+        # ── Release STAAD file lock ───────────────────────────────────────────
+        self.status_var.set("Preparing file …")
+        self.log("Releasing STAAD file lock …")
+        try:
+            staad_pre = os_analytical.connect()
+            try:
+                tmp_fp = os.path.join(os.path.dirname(fp), "_temp_blank.std")
+                with open(tmp_fp, "w") as tf:
+                    tf.write("STAAD SPACE TEMP\nFINISH\n")
+                staad_pre.OpenSTAADFile(tmp_fp)
+                self.log("  STAAD detached from target file ✓", "success")
+            except Exception as e:
+                self.log(f"  Detach note: {e}", "warning")
+        except Exception as e:
+            self.log(f"  Pre-connect note: {e}", "warning")
+
+        # ── Write .std file ───────────────────────────────────────────────────
+        self.status_var.set("Writing .std file …")
+        self.log(f"Writing: {fp}")
+        std_content = "\n".join(lines) + "\n"
+
+        actual_fp = fp
+        for attempt in range(5):
+            try:
+                with open(actual_fp, "w") as f:
+                    f.write(std_content)
+                self.log(f"  .std written ({len(lines)} lines) → {actual_fp}", "success")
+                break
+            except PermissionError:
+                base, ext = os.path.splitext(fp)
+                actual_fp = f"{base}_v{attempt+2}{ext}"
+                self.log(f"  File locked — trying: {actual_fp}", "warning")
+        else:
+            raise PermissionError(
+                f"Cannot write to {fp} — locked by STAAD.Pro.\n\n"
+                f"Fix: In STAAD.Pro do File → New, then retry.\n"
+                f"Or click '…' to choose a different output filename."
+            )
+
+        # STEP 3: Open the written file in STAAD.Pro
         self.status_var.set("Opening in STAAD.Pro …")
-        self.log("Opening model in STAAD.Pro …")
+        self.log(f"Opening {actual_fp} in STAAD.Pro …")
         try:
             self.staad = os_analytical.connect()
-            # Open the .std file we just wrote
-            try:
-                self.staad.OpenSTAADFile(fp)
-            except Exception:
-                try:
-                    self.staad.NewSTAADFile(fp, "Two-Storey House NSCP2015")
-                except Exception:
-                    pass
+            self.staad.OpenSTAADFile(actual_fp)
             self.staad.SaveModel(True)
             self.log("Opened in STAAD.Pro ✓", "success")
         except Exception as e:
             self.log(f"  STAAD open note: {e}", "warning")
-            self.log(f"  File written at: {fp}", "warning")
-            self.log("  Open it manually: File → Open in STAAD.Pro", "warning")
+            self.log(f"  File saved at: {actual_fp}", "warning")
+            self.log("  Manually open in STAAD.Pro: File → Open → select the file", "warning")
 
         # Run analysis
         if run_analysis:
@@ -1066,7 +1332,7 @@ NOTES:
         self.log(f"  Material : {mat_name}", "success")
         self.log(f"  Support  : {sup_type} at {len(base_nodes)} base nodes", "success")
         self.log(f"  Units    : {u_str}", "success")
-        self.log(f"  File     : {fp}", "success")
+        self.log(f"  File     : {actual_fp}", "success")
         self.log("="*60, "success")
         self.log("TIP: View → Structure Diagrams → Rendering → Beam for 3D view","warning")
         self.status_var.set("Done!")
@@ -1078,7 +1344,7 @@ NOTES:
             f"  Material : {mat_name}\n"
             f"  Support  : {sup_type}\n"
             f"  Units    : {u_str}\n"
-            f"  File     : {fp}\n\n"
+            f"  File     : {actual_fp}\n\n"
             "3D view: View → Structure Diagrams\n"
             "  → Rendering tab → check 'Beam'"))
 
@@ -1101,6 +1367,14 @@ NOTES:
         for b in [self.btn_preview, self.btn_seismic,
                   self.btn_build, self.btn_analyze]:
             b['state'] = state
+        if state == "disabled":
+            self.status_var.set("Building …")
+            self._hdr_status.config(text="● Building …", fg=self.C_ACCENT)
+        else:
+            self.status_var.set("Ready")
+            self._hdr_status.config(
+                text="● STAAD: Ready" if STAAD_AVAILABLE else "● openstaadpy missing",
+                fg=self.C_GREEN if STAAD_AVAILABLE else self.C_RED)
 
     def save_config(self):
         try:
